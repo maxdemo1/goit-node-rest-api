@@ -1,15 +1,9 @@
-import * as fs from "node:fs/promises";
-import path from "node:path";
-import { nanoid } from "nanoid";
-
-const contactsPath = path.resolve("db", "contacts.json");
+import contactsModel from "../schemas/contactsMongooseSchemas.js";
 
 async function listContacts() {
   try {
-    const listContacts = await fs.readFile(contactsPath, {
-      encoding: "utf-8",
-    });
-    return JSON.parse(listContacts);
+    const listContacts = await contactsModel.find({});
+    return listContacts;
   } catch (error) {
     console.error(error);
     return;
@@ -17,108 +11,71 @@ async function listContacts() {
 }
 
 async function getContactById(contactId) {
-  if (contactId === undefined) {
-    throw new Error("ID is required");
+  try {
+    const foundedContact = await contactsModel.findById(contactId);
+    return foundedContact;
+  } catch (error) {
+    console.error(error);
+    return "invalidID";
   }
-
-  const allContacts = await listContacts();
-  const foundContact = allContacts.find((contact) => contact.id === contactId);
-
-  if (foundContact === undefined) {
-    return null;
-  }
-
-  return foundContact;
 }
 
 async function removeContactById(contactId) {
-  if (contactId === undefined) {
-    throw new Error("ID is required");
-  }
-
-  const allContacts = await listContacts();
-  const deleteContactIndex = allContacts.findIndex(
-    (contact) => contact.id === contactId
-  );
-
-  if (deleteContactIndex === -1) {
-    return null;
-  }
-
   try {
-    await fs.writeFile(
-      contactsPath,
-      JSON.stringify(
-        [
-          ...allContacts.slice(0, deleteContactIndex),
-          ...allContacts.slice(deleteContactIndex + 1),
-        ],
-
-        undefined,
-        2
-      )
-    );
+    const deletedContact = await contactsModel.findByIdAndDelete(contactId);
+    return deletedContact;
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    return "invalidID";
   }
-
-  return allContacts[deleteContactIndex];
 }
 
-async function addContact({ name, email, phone }) {
-  if (name === undefined || email === undefined || phone === undefined) {
-    throw new Error("all fields are required");
-  }
+async function addContact({ name, email, phone, favorite = false }) {
   const newContact = {
-    id: nanoid(),
     name,
     email,
     phone,
+    favorite,
   };
 
-  const allContacts = await listContacts();
-
   try {
-    await fs.writeFile(
-      contactsPath,
-      JSON.stringify([...allContacts, newContact], null, 2)
-    );
+    const newContactResult = await contactsModel.create(newContact);
+    return newContactResult;
   } catch (error) {
-    throw new Error(error);
-  }
-
-  return newContact;
-}
-
-async function editContact(id, newUserData) {
-  const allContacts = await listContacts();
-  const editContactIndex = allContacts.findIndex(
-    (contact) => contact.id === id
-  );
-
-  if (editContactIndex === -1) {
+    console.error(error);
     return null;
   }
-  const editedContact = { ...allContacts[editContactIndex], ...newUserData };
-  try {
-    await fs.writeFile(
-      contactsPath,
-      JSON.stringify(
-        [
-          ...allContacts.slice(0, editContactIndex),
-          editedContact,
-          ...allContacts.slice(editContactIndex + 1),
-        ],
+}
 
-        undefined,
-        2
-      )
-    );
-  } catch (error) {
-    throw new Error(error);
+async function editContact(id, newContactData) {
+  if (newContactData.favorite === undefined) {
+    newContactData = { ...newContactData, favorite: false };
   }
+  try {
+    const newContact = await contactsModel.findByIdAndUpdate(
+      id,
+      newContactData,
+      { new: true }
+    );
+    return newContact;
+  } catch (error) {
+    console.error(error);
+    return "invalidID";
+  }
+}
 
-  return editedContact;
+async function setFavorite(id, favoriteState) {
+  try {
+    const editContact = await contactsModel.findByIdAndUpdate(
+      id,
+      { favorite: favoriteState },
+      { new: true }
+    );
+    return editContact;
+  } catch (error) {
+    console.error(error);
+    return "invalidID";
+  }
 }
 
 const contactsService = {
@@ -127,5 +84,6 @@ const contactsService = {
   removeContactById,
   addContact,
   editContact,
+  setFavorite,
 };
 export default contactsService;
