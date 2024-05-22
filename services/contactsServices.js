@@ -1,4 +1,5 @@
-import contactsModel from "../schemas/contactsMongooseSchemas.js";
+import HttpError from "../helpers/HttpError.js";
+import contactsModel from "../schemas/contactsMongooseSchema.js";
 
 async function listContacts() {
   try {
@@ -6,7 +7,7 @@ async function listContacts() {
     return listContacts;
   } catch (error) {
     console.error(error);
-    return;
+    return HttpError(error.status);
   }
 }
 
