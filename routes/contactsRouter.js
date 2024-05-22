@@ -6,13 +6,14 @@ import {
   createContact,
   updateContact,
   setFavorite,
-} from "../controllers/contactsControllers.js";
+} from "../controllers/contactController/contactsControllers.js";
 import validateBody from "../helpers/validateBody.js";
 import {
   createContactSchema,
   updateContactFavorite,
   updateContactSchema,
 } from "../schemas/contactsValidationSchema.js";
+import { registerUserSchema } from "../schemas/usersValidationSchema.js";
 
 const editValidation = validateBody(updateContactSchema);
 const editFavoriteValidation = validateBody(updateContactFavorite);

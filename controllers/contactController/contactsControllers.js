@@ -1,5 +1,5 @@
-import HttpError from "../helpers/HttpError.js";
-import contactsService from "../services/contactsServices.js";
+import HttpError from "../../helpers/HttpError.js";
+import contactsService from "../../services/contactsServices.js";
 
 export const getAllContacts = async (req, res, next) => {
   const allContacts = await contactsService.listContacts();
