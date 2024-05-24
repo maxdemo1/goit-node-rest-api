@@ -1,10 +1,33 @@
 import HttpError from "../helpers/HttpError.js";
 import contactsModel from "../schemas/contactsMongooseSchema.js";
 
-async function listContacts() {
+async function listContacts(queryParams) {
   try {
-    const listContacts = await contactsModel.find({});
-    return listContacts;
+    if (Object.keys(queryParams).length === 0) {
+      const listContacts = await contactsModel.find({});
+      return listContacts;
+    } else if (
+      Object.keys(queryParams).length === 2 &&
+      Object.keys(queryParams)[0] === "page" &&
+      Object.keys(queryParams)[1] === "limit"
+    ) {
+      const listContacts = await contactsModel
+        .find({})
+        .skip(queryParams.limit * (queryParams.page - 1))
+        .limit(queryParams.limit);
+      return listContacts;
+    } else if (
+      Object.keys(queryParams).length === 1 &&
+      Object.keys(queryParams)[0] === "favorite"
+    ) {
+      const listContacts = await contactsModel.find({
+        favorite: queryParams.favorite,
+      });
+      return listContacts;
+    } else {
+      console.log("Invalid query parameters");
+      return HttpError(400);
+    }
   } catch (error) {
     console.error(error);
     return HttpError(error.status);

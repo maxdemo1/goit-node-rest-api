@@ -1,8 +1,9 @@
 import HttpError from "../../helpers/HttpError.js";
 import contactsService from "../../services/contactsServices.js";
+import contactsModel from "../../schemas/contactsMongooseSchema.js";
 
 export const getAllContacts = async (req, res, next) => {
-  const allContacts = await contactsService.listContacts();
+  const allContacts = await contactsService.listContacts(req.query);
 
   if (Array.isArray(allContacts) && allContacts.length === 0) {
     res.status(404).send({ message: "No data in database" });
