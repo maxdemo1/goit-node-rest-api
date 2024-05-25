@@ -10,7 +10,7 @@ export const UserDataValidation = (req, res, next) => {
     return next();
   }
   console.error(error);
-  next(HttpError(400, "Помилка від Joi або іншої бібліотеки валідації"));
+  next(HttpError(400, error.message));
 };
 
 export const subscriptionTypeValidation = (req, res, next) => {
@@ -19,5 +19,5 @@ export const subscriptionTypeValidation = (req, res, next) => {
     return next();
   }
   console.error(error);
-  next(HttpError(400, "Помилка від Joi або іншої бібліотеки валідації"));
+  next(HttpError(400, error.message));
 };

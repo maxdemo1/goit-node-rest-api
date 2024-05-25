@@ -3,7 +3,10 @@ import contactsService from "../../services/contactsServices.js";
 import contactsModel from "../../schemas/contactsMongooseSchema.js";
 
 export const getAllContacts = async (req, res, next) => {
-  const allContacts = await contactsService.listContacts(req.query);
+  const allContacts = await contactsService.listContacts(
+    req.query,
+    req.user.id
+  );
 
   if (Array.isArray(allContacts) && allContacts.length === 0) {
     res.status(404).send({ message: "No data in database" });
@@ -16,7 +19,10 @@ export const getAllContacts = async (req, res, next) => {
 };
 
 export const getOneContact = async (req, res, next) => {
-  const contactById = await contactsService.getContactById(req.params.id);
+  const contactById = await contactsService.getContactById(
+    req.params.id,
+    req.user.id
+  );
 
   if (contactById === null) {
     next(HttpError(404));
@@ -31,7 +37,10 @@ export const getOneContact = async (req, res, next) => {
 };
 
 export const deleteContact = async (req, res, next) => {
-  const deletedContact = await contactsService.removeContactById(req.params.id);
+  const deletedContact = await contactsService.removeContactById(
+    req.params.id,
+    req.user.id
+  );
 
   switch (deletedContact) {
     case null:
@@ -66,6 +75,7 @@ export const updateContact = async (req, res, next) => {
   };
   const editedContact = await contactsService.editContact(
     req.params.id,
+    req.user.id,
     newContactData
   );
 
@@ -85,6 +95,7 @@ export const updateContact = async (req, res, next) => {
 export const setFavorite = async (req, res, next) => {
   const editedContact = await contactsService.setFavorite(
     req.params.id,
+    req.user.id,
     req.body.favorite
   );
   switch (editedContact) {
