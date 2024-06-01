@@ -1,5 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
+import jimp from "jimp";
+import path from "node:path";
+import * as fs from "node:fs/promises";
+
 import userModel from "../../schemas/usersMongooseSchema.js";
 import HttpError from "../../helpers/HttpError.js";
 
@@ -7,10 +12,13 @@ export const registerUser = async (req, res, next) => {
   try {
     const hashPassword = await bcrypt.hash(req.body.password, 10);
 
+    const avatarURL = gravatar.url(req.body.email, { s: "100" }, true);
+
     const newUserData = {
       email: req.body.email,
       password: hashPassword,
       subscription: req.body.subscription || "starter",
+      avatarURL,
     };
     const newUser = await userModel.create(newUserData);
     res.status(201).send({
@@ -83,6 +91,31 @@ export const updateSubscription = async (req, res, next) => {
     );
     res.send(user);
   } catch (error) {
+    next(HttpError(error.status));
+  }
+};
+
+export const setNewAvatar = async (req, res, next) => {
+  try {
+    await jimp.read(req.file.path).then((image) => {
+      return image.resize(250, 250).write(req.file.path);
+    });
+
+    const avatarPath = path.resolve("public", "avatar", req.file.filename);
+
+    await fs.rename(req.file.path, avatarPath);
+
+    const newUserData = await userModel.findByIdAndUpdate(
+      req.user.id,
+      {
+        avatarURL: `/avatars/${req.file.filename}`,
+      },
+      { new: true }
+    );
+
+    res.send({ avatarURL: newUserData.avatarURL });
+  } catch (error) {
+    console.log(error);
     next(HttpError(error.status));
   }
 };
