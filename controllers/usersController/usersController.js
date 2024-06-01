@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
-import jimp from "jimp";
+import Jimp from "jimp";
 import path from "node:path";
 import * as fs from "node:fs/promises";
 
@@ -53,7 +53,9 @@ export const loginUser = async (req, res, next) => {
       { expiresIn: "24h" }
     );
     await userModel.findByIdAndUpdate(isUser._id, { token }, { new: true });
-    res.status(200).send({ token, user: { email, password } });
+    res
+      .status(200)
+      .send({ token, user: { email, subscription: isUser.subscription } });
   } catch (error) {
     return next(HttpError(error.status));
   }
@@ -97,7 +99,7 @@ export const updateSubscription = async (req, res, next) => {
 
 export const setNewAvatar = async (req, res, next) => {
   try {
-    await jimp.read(req.file.path).then((image) => {
+    await Jimp.read(req.file.path).then((image) => {
       return image.resize(250, 250).write(req.file.path);
     });
 
