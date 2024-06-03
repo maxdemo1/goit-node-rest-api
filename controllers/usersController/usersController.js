@@ -98,19 +98,21 @@ export const updateSubscription = async (req, res, next) => {
 };
 
 export const setNewAvatar = async (req, res, next) => {
+  if (req.file === undefined) {
+    next(HttpError(400, "No image in request"));
+  }
   try {
     await Jimp.read(req.file.path).then((image) => {
       return image.resize(250, 250).write(req.file.path);
     });
 
-    const avatarPath = path.resolve("public", "avatar", req.file.filename);
-
+    const avatarPath = path.resolve("public", "avatars", req.file.filename);
     await fs.rename(req.file.path, avatarPath);
 
     const newUserData = await userModel.findByIdAndUpdate(
       req.user.id,
       {
-        avatarURL: `/avatars/${req.file.filename}`,
+        avatarURL: path.join("avatars", req.file.filename),
       },
       { new: true }
     );
