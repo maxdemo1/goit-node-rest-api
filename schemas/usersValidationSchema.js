@@ -9,6 +9,8 @@ export const registerUserSchema = Joi.object({
     .required(),
   subscription: Joi.string().valid("starter", "pro", "business"),
   avatarURL: Joi.string(),
+  verificationKey: Joi.any().forbidden(),
+  verificated: Joi.any().forbidden(),
 });
 
 export const subscriptionSchema = Joi.object({

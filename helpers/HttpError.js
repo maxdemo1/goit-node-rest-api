@@ -8,6 +8,10 @@ const messageList = {
 };
 
 const HttpError = (status = 400, message = messageList[status]) => {
+  if (status === undefined) {
+    status = 400;
+    message = messageList[status];
+  }
   const error = new Error(message);
   error.status = status;
   return error;

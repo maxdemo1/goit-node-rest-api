@@ -20,6 +20,14 @@ const UsersSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    verificated: {
+      type: Boolean,
+      default: false,
+    },
+    verificationKey: {
+      type: String,
+      required: [true, "Verify token is required"],
+    },
     avatarURL: String,
   },
   { versionKey: false }
